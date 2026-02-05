@@ -1,13 +1,25 @@
-import { ApiKeyCheck } from "@/components/ApiKeyCheck";
-import { Navbar } from "./components/Navbar";
+"use client";
+
+import { Navbar } from "@/app/components/Navbar"; 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [repoUrl, setRepoUrl] = useState("");
+  const router = useRouter();
+
+  const handleAnalyze = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (repoUrl.trim()) {
+      const encodedUrl = encodeURIComponent(repoUrl);
+      router.push(`/chat?repo=${encodedUrl}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0d1117] font-[family-name:var(--font-geist-sans)] text-white">
-      {/* Navbar is rendered here */}
       <Navbar />
 
-      {/* Adding pt-16 (padding-top) to prevent the hero from being hidden under the sticky Navbar */}
       <main className="flex flex-col items-center justify-center pt-32 px-4 pb-20">
         <div className="max-w-2xl w-full text-center space-y-8">
           <div className="space-y-4">
@@ -20,24 +32,34 @@ export default function Home() {
           </div>
 
           <div className="w-full bg-[#161b22] border border-[#30363d] p-8 rounded-xl shadow-2xl">
-            <div className="flex flex-col gap-4">
+            <form onSubmit={handleAnalyze} className="flex flex-col gap-4">
               <input 
                 type="text" 
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
                 placeholder="https://github.com/username/repo"
                 className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-600 font-mono text-sm"
               />
               
-              <ApiKeyCheck>
-                <div className="flex justify-center">
-                  <a
-                    href="/chat"
-                    className="flex items-center justify-center gap-2 w-full px-6 py-4 rounded-md font-bold text-lg bg-[#238636] hover:bg-[#2ea043] text-white transition-all border border-[#2ea043]"
-                  >
-                    Analyze Repository →
-                  </a>
-                </div>
-              </ApiKeyCheck>
-            </div>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  disabled={!repoUrl.trim()} // <--- 1. Prevents clicking
+                  className={`
+                    flex items-center justify-center gap-2 w-full px-6 py-4 rounded-md font-bold text-lg 
+                    transition-all border border-[#2ea043]
+                    
+                    /* Enabled State Styles */
+                    ${repoUrl.trim() 
+                      ? " bg-[#2ea043] text-white cursor-pointer" 
+                      : " bg-[#2ea043] opacity-50 cursor-not-allowed text-gray-300" 
+                    }
+                  `}
+                >
+                  Analyze Repository →
+                </button>
+              </div>
+            </form>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 text-left">

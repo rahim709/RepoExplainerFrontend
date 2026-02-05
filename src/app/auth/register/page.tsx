@@ -6,7 +6,7 @@ import * as z from "zod";
 import Link from "next/link";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import api from "@/lib/axios"; // Importing your axios instance
+import api from "@/lib/axios"; 
 import { useRouter } from "next/navigation";
 
 const registerSchema = z.object({
@@ -28,17 +28,28 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      // API call to the registration endpoint using your axios instance
-      const response = await api.post("/auth/register", {
+      // 1. REGISTER
+      await api.post("/api/user/register", {
         fullName: data.fullName,
         email: data.email,
         password: data.password,
       });
 
-      if (response.status === 201 || response.status === 200) {
-        // Redirect to login page after successful registration
+      // 2. AUTO-LOGIN (Since register endpoint doesn't return token)
+      const loginResponse = await api.post("/api/user/login", {
+        email: data.email,
+        password: data.password,
+      });
+
+      // 3. REDIRECT TO CHAT
+      if (loginResponse.data.token) {
+        localStorage.setItem("token", loginResponse.data.token);
+        router.push("/chat");
+      } else {
+        // Fallback if auto-login fails for some reason
         router.push("/auth/login");
       }
+
     } catch (error: any) {
       console.error("Registration Error:", error.response?.data?.message || error.message);
     } finally {

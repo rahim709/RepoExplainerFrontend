@@ -5,13 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { useState } from "react";
-import { Loader2, Github } from "lucide-react";
-import api from "@/lib/axios"; // Importing the axios instance we created
+import { Loader2 } from "lucide-react";
+import api from "@/lib/axios"; 
 import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
-  identifier: z.string().min(3, "email is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  identifier: z.string().min(3, "Email is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -27,25 +27,26 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      // Using the api instance to fetch the login endpoint
-      const response = await api.post("/auth/login", {
+      const response = await api.post("/api/user/login", {
         email: data.identifier,
         password: data.password,
       });
 
       if (response.data.token) {
-        localStorage.setItem("auth-token", response.data.token);
+        // Save token and Redirect to Chat
+        localStorage.setItem("token", response.data.token);
         router.push("/chat");
       }
     } catch (error: any) {
       console.error("Login Error:", error.response?.data?.message || error.message);
+      // Optional: Add a UI toast/alert here for the error
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-[480px]  animate-in fade-in zoom-in duration-500">
+    <div className="w-full max-w-[480px] animate-in fade-in zoom-in duration-500">
       <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back</h1>

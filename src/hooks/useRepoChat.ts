@@ -1,39 +1,71 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
+import { useRouter } from "next/navigation"; // Import useRouter
 
-// Define the shape of a message
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-// UPDATE: Accept 'initialMessages' as an argument (Default to empty array)
 export function useRepoChat(initialMessages: ChatMessage[] = []) {
-  
-  // Initialize state with the passed messages
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
-  const [repoContext, setRepoContext] = useState<string | null>(null);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const router = useRouter(); // Initialize router
 
-  // UPDATE: When switching chats, update the internal state immediately
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
 
   const analyzeRepo = async (repoUrl: string) => {
     setIsLoading(true);
-    setMessages([{ role: "user", content: `Analyzing repository: ${repoUrl}` }]);
+    setMessages((prev) => [...prev, { role: "user", content: `Analyzing repository: ${repoUrl}` }]);
 
     try {
-      const response = await api.post("/repo/analyze", { url: repoUrl });
-      const summary = response.data.summary;
-      setRepoContext(summary);
-      setMessages((prev) => [...prev, { role: "assistant", content: summary }]);
-    } catch (error: any) {
-      console.error("Analysis failed", error);
+        console.log("Analyzing repo:", repoUrl);
+      const response = await api.post("/api/repo", { url: repoUrl });
+      const project = response.data;
+      const analysis = project.aiAnalysis;
+
+      const markdownContent = `
+### 🚀 ${analysis.projectName}
+
+${analysis.summary}
+
+---
+
+### 🛠 Tech Stack
+${analysis.techStack.map((tech: string) => `\`${tech}\``).join(" ")}
+
+### 🏛 Architecture
+**${analysis.architecture.style}**
+${analysis.architecture.explanation}
+
+### ✨ Key Features
+${analysis.keyFeatures.map((feat: string) => `* ${feat}`).join("\n")}
+      `.trim();
+
       setMessages((prev) => [
         ...prev, 
-        { role: "assistant", content: "Error: Failed to analyze repository." }
+        { role: "assistant", content: markdownContent }
+      ]);
+      
+      setCurrentProjectId(project._id);
+
+    } catch (error: any) {
+      console.error("Analysis failed", error);
+      
+      // --- FIX: Handle 401 (Unauthorized) ---
+      if (error.response?.status === 401) {
+        // Redirect to Login if token is missing/expired
+        router.push("/auth/login");
+        return; 
+      }
+
+      const errorMessage = error.response?.data?.message || "Failed to analyze repository.";
+      setMessages((prev) => [
+        ...prev, 
+        { role: "assistant", content: `❌ **Error:** ${errorMessage}` }
       ]);
     } finally {
       setIsLoading(false);
@@ -48,20 +80,27 @@ export function useRepoChat(initialMessages: ChatMessage[] = []) {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/chat/message", { 
+      const response = await api.post("/api/user/chat", { 
         message: userMessage,
-        context: repoContext 
+        projectId: currentProjectId 
       });
 
       setMessages((prev) => [
         ...prev, 
-        { role: "assistant", content: response.data.answer }
+        { role: "assistant", content: response.data.answer || "Message received." }
       ]);
     } catch (error: any) {
       console.error("Chat failed", error);
+
+      // --- FIX: Handle 401 (Unauthorized) ---
+      if (error.response?.status === 401) {
+        router.push("/auth/login");
+        return;
+      }
+
       setMessages((prev) => [
         ...prev, 
-        { role: "assistant", content: "Sorry, I encountered an error." }
+        { role: "assistant", content: "Sorry, I encountered an error connecting to the chat service." }
       ]);
     } finally {
       setIsLoading(false);

@@ -1,135 +1,59 @@
 import { ApiKeyCheck } from "@/components/ApiKeyCheck";
-import Image from "next/image";
-
-const KeyFilesSection = () => (
-  <div className="bg-white px-8 py-4">
-    <h2 className="text-xl font-semibold mb-4">How it works:</h2>
-    <ul className="space-y-4 text-gray-600">
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium">src/app/layout.tsx</code> - Main layout
-          with TamboProvider
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium font-mono">src/app/chat/page.tsx</code> -
-          Chat page with TamboProvider and MCP integration
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium font-mono">
-            src/app/interactables/page.tsx
-          </code>{" "}
-          - Interactive demo page with tools and components
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium font-mono">
-            src/components/tambo/message-thread-full.tsx
-          </code>{" "}
-          - Chat UI
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium font-mono">
-            src/components/tambo/graph.tsx
-          </code>{" "}
-          - A generative graph component
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span>📄</span>
-        <span>
-          <code className="font-medium font-mono">
-            src/services/population-stats.ts
-          </code>{" "}
-          - Example tool implementation with mock population data
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span className="text-blue-500">📄</span>
-        <span>
-          <code className="font-medium font-mono">src/lib/tambo.ts</code> -
-          Component and tool registration
-        </span>
-      </li>
-      <li className="flex items-start gap-2">
-        <span className="text-blue-500">📄</span>
-        <span>
-          <code className="font-medium font-mono">README.md</code> - For more
-          details check out the README
-        </span>
-      </li>
-    </ul>
-    <div className="flex gap-4 flex-wrap mt-4">
-      <a
-        href="https://docs.tambo.co"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-6 py-3 rounded-md font-medium transition-colors text-lg mt-4 border border-gray-300 hover:bg-gray-50"
-      >
-        View Docs
-      </a>
-      <a
-        href="https://tambo.co/dashboard"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-6 py-3 rounded-md font-medium transition-colors text-lg mt-4 border border-gray-300 hover:bg-gray-50"
-      >
-        Dashboard
-      </a>
-    </div>
-  </div>
-);
+import { Navbar } from "./components/Navbar";
 
 export default function Home() {
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center justify-center font-[family-name:var(--font-geist-sans)]">
-      <main className="max-w-2xl w-full space-y-8">
-        <div className="flex flex-col items-center">
-          <a href="https://tambo.co" target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/Octo-Icon.svg"
-              alt="Tambo AI Logo"
-              width={80}
-              height={80}
-              className="mb-4"
-            />
-          </a>
-          <h1 className="text-4xl text-center">tambo-ai chat template</h1>
-        </div>
+    <div className="min-h-screen bg-[#0d1117] font-[family-name:var(--font-geist-sans)] text-white">
+      {/* Navbar is rendered here */}
+      <Navbar />
 
-        <div className="w-full space-y-8">
-          <div className="bg-white px-8 py-4">
-            <h2 className="text-xl font-semibold mb-4">Setup Checklist</h2>
-            <ApiKeyCheck>
-              <div className="flex gap-4 flex-wrap">
-                <a
-                  href="/chat"
-                  className="px-6 py-3 rounded-md font-medium shadow-sm transition-colors text-lg mt-4 bg-[#7FFFC3] hover:bg-[#72e6b0] text-gray-800"
-                >
-                  Go to Chat →
-                </a>
-                <a
-                  href="/interactables"
-                  className="px-6 py-3 rounded-md font-medium shadow-sm transition-colors text-lg mt-4 bg-[#FFE17F] hover:bg-[#f5d570] text-gray-800"
-                >
-                  Interactables Demo →
-                </a>
-              </div>
-            </ApiKeyCheck>
+      {/* Adding pt-16 (padding-top) to prevent the hero from being hidden under the sticky Navbar */}
+      <main className="flex flex-col items-center justify-center pt-32 px-4 pb-20">
+        <div className="max-w-2xl w-full text-center space-y-8">
+          <div className="space-y-4">
+            <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+              Master Any Codebase in Seconds
+            </h1>
+            <p className="text-gray-400 text-xl max-w-lg mx-auto">
+              Paste a GitHub link to visualize architecture and chat with your repository.
+            </p>
           </div>
 
-          <KeyFilesSection />
+          <div className="w-full bg-[#161b22] border border-[#30363d] p-8 rounded-xl shadow-2xl">
+            <div className="flex flex-col gap-4">
+              <input 
+                type="text" 
+                placeholder="https://github.com/username/repo"
+                className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-600 font-mono text-sm"
+              />
+              
+              <ApiKeyCheck>
+                <div className="flex justify-center">
+                  <a
+                    href="/chat"
+                    className="flex items-center justify-center gap-2 w-full px-6 py-4 rounded-md font-bold text-lg bg-[#238636] hover:bg-[#2ea043] text-white transition-all border border-[#2ea043]"
+                  >
+                    Analyze Repository →
+                  </a>
+                </div>
+              </ApiKeyCheck>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 text-left">
+            <div className="p-4 border border-[#30363d] rounded-lg bg-[#0d1117] hover:border-blue-400 transition-colors">
+              <div className="text-blue-400 mb-2 font-semibold font-mono tracking-tight">🌳 Tree View</div>
+              <p className="text-sm text-gray-400">Instantly map out project structure and file relations.</p>
+            </div>
+            <div className="p-4 border border-[#30363d] rounded-lg bg-[#0d1117] hover:border-green-400 transition-colors">
+              <div className="text-green-400 mb-2 font-semibold font-mono tracking-tight">💬 AI Architect</div>
+              <p className="text-sm text-gray-400">Ask deep questions about logic, data flow, and state.</p>
+            </div>
+            <div className="p-4 border border-[#30363d] rounded-lg bg-[#0d1117] hover:border-purple-400 transition-colors">
+              <div className="text-purple-400 mb-2 font-semibold font-mono tracking-tight">🚀 Fast Onboarding</div>
+              <p className="text-sm text-gray-400">Go from "cloned" to "contributing" in minutes.</p>
+            </div>
+          </div>
         </div>
       </main>
     </div>

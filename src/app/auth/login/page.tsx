@@ -27,19 +27,22 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const response = await api.post("/api/user/login", {
+      // The backend sets the 'token' cookie automatically upon success
+      await api.post("/api/user/login", {
         email: data.identifier,
         password: data.password,
       });
 
-      if (response.data.token) {
-        // Save token and Redirect to Chat
-        localStorage.setItem("token", response.data.token);
-        router.push("/chat");
-      }
+      // Optional: Save email/name to localStorage ONLY for UI display (Sidebar)
+      // Since the backend login response doesn't return the name, we use the email as fallback
+      localStorage.setItem("fullName", data.identifier);
+
+      // Redirect
+      router.push("/chat");
+
     } catch (error: any) {
       console.error("Login Error:", error.response?.data?.message || error.message);
-      // Optional: Add a UI toast/alert here for the error
+      // Optional: Add toast notification here
     } finally {
       setIsLoading(false);
     }

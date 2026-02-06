@@ -28,27 +28,24 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      // 1. REGISTER
+      // 1. REGISTER (Backend creates user)
       await api.post("/api/user/register", {
-        fullName: data.fullName,
+        userName: data.fullName, // Changed 'fullName' to 'userName' to match your backend model
         email: data.email,
         password: data.password,
       });
 
-      // 2. AUTO-LOGIN (Since register endpoint doesn't return token)
-      const loginResponse = await api.post("/api/user/login", {
+      // 2. AUTO-LOGIN (Backend sets the cookie)
+      await api.post("/api/user/login", {
         email: data.email,
         password: data.password,
       });
 
-      // 3. REDIRECT TO CHAT
-      if (loginResponse.data.token) {
-        localStorage.setItem("token", loginResponse.data.token);
-        router.push("/chat");
-      } else {
-        // Fallback if auto-login fails for some reason
-        router.push("/auth/login");
-      }
+      // 3. Save Name for UI only
+      localStorage.setItem("fullName", data.fullName);
+
+      // 4. Redirect
+      router.push("/chat");
 
     } catch (error: any) {
       console.error("Registration Error:", error.response?.data?.message || error.message);

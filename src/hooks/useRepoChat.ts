@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation"; 
 
+// --- DEFINITIONS ---
 export interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "model";
   content: string;
+  uiComponent?: string; 
+  uiData?: any;         
 }
+
+export interface ChatSession {
+  id: number;
+  title: string;
+  date: string;
+  messages: ChatMessage[];
+}
+// -------------------
 
 export function useRepoChat(initialMessages: ChatMessage[] = []) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const router = useRouter(); // Initialize router
+  const router = useRouter(); 
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -22,7 +33,6 @@ export function useRepoChat(initialMessages: ChatMessage[] = []) {
     setMessages((prev) => [...prev, { role: "user", content: `Analyzing repository: ${repoUrl}` }]);
 
     try {
-        console.log("Analyzing repo:", repoUrl);
       const response = await api.post("/api/repo", { url: repoUrl });
       const project = response.data;
       const analysis = project.aiAnalysis;
@@ -47,7 +57,12 @@ ${analysis.keyFeatures.map((feat: string) => `* ${feat}`).join("\n")}
 
       setMessages((prev) => [
         ...prev, 
-        { role: "assistant", content: markdownContent }
+        { 
+            role: "assistant", 
+            content: markdownContent,
+            uiComponent: "ProjectSummaryCard",
+            uiData: analysis
+        }
       ]);
       
       setCurrentProjectId(project._id);
@@ -55,13 +70,17 @@ ${analysis.keyFeatures.map((feat: string) => `* ${feat}`).join("\n")}
     } catch (error: any) {
       console.error("Analysis failed", error);
       
-      // --- FIX: Handle 401 (Unauthorized) ---
       if (error.response?.status === 401) {
-        // Redirect to Login if token is missing/expired
         router.push("/auth/login");
         return; 
       }
-
+      if (error.response?.status === 402) {
+         setMessages((prev) => [
+          ...prev, 
+          { role: "assistant", content: `❌ **Analysis Failed**\n\nI couldn't fetch the repository data from GitHub.\n\n**Possible reasons:**\n1. The repository is Private.\n2. The Backend GitHub Token is missing/expired.\n3. The GitHub URL is incorrect.` }
+        ]);
+        return;
+      }
       const errorMessage = error.response?.data?.message || "Failed to analyze repository.";
       setMessages((prev) => [
         ...prev, 
@@ -90,14 +109,10 @@ ${analysis.keyFeatures.map((feat: string) => `* ${feat}`).join("\n")}
         { role: "assistant", content: response.data.answer || "Message received." }
       ]);
     } catch (error: any) {
-      console.error("Chat failed", error);
-
-      // --- FIX: Handle 401 (Unauthorized) ---
       if (error.response?.status === 401) {
         router.push("/auth/login");
         return;
       }
-
       setMessages((prev) => [
         ...prev, 
         { role: "assistant", content: "Sorry, I encountered an error connecting to the chat service." }

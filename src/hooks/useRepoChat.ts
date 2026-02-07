@@ -6,8 +6,8 @@ import { toast } from "sonner";
 export interface ChatMessage {
   role: "user" | "assistant" | "model";
   content: string;
-  uiComponent?: string; 
-  uiData?: any;         
+  uiComponent?: string;
+  uiData?: any;
 }
 
 export interface ProjectData {
@@ -15,7 +15,7 @@ export interface ProjectData {
   repoName: string;
   owner: string;
   updatedAt: string;
-  chatHistory: ChatMessage[]; 
+  chatHistory: ChatMessage[];
 }
 
 export function useRepoChat() {
@@ -23,87 +23,85 @@ export function useRepoChat() {
   const [history, setHistory] = useState<ProjectData[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(true); 
   const router = useRouter();
 
-  // 1. FETCH ALL PROJECTS & SORT BY DATE
+  // Helper to generate the consistent "Start Message"
+  const getStartMessage = (url: string): ChatMessage => ({
+    role: "user",
+    content: `Analyzed repository: ${url}`,
+  });
+
+  // 1. FETCH ALL PROJECTS
   useEffect(() => {
     const fetchHistory = async () => {
-      setIsHistoryLoading(true); 
       try {
         const { data } = await api.get("/api/user/allprojects");
-        const projects = data.projects || [];
-        
-        // --- LOGIC: Sort by Latest Date First ---
-        projects.sort((a: ProjectData, b: ProjectData) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-
-        setHistory(projects);
+        setHistory(data.projects || []);
       } catch (error) {
         console.error("Failed to load projects", error);
-      } finally {
-        setIsHistoryLoading(false); 
       }
     };
     fetchHistory();
   }, []);
 
   // 2. SELECT CHAT
-  const selectChat = useCallback((projectId: string) => {
-    const project = history.find(p => String(p._id) === String(projectId));
-    
-    if (project) {
-      setCurrentProjectId(projectId);
-      
-      const formattedMessages = (project.chatHistory || []).map((msg: any) => ({
-        role: msg.role === 'model' ? 'assistant' : msg.role,
-        content: msg.content,
-        uiComponent: msg.uiComponent,
-        uiData: msg.uiData
-      }));
-      
-      setMessages(formattedMessages);
-    }
-  }, [history]);
+  const selectChat = useCallback(
+    (projectId: string) => {
+      const project = history.find((p) => p._id === projectId);
+
+      if (project) {
+        setCurrentProjectId(projectId);
+
+        const formattedMessages = project.chatHistory.map((msg: any) => ({
+          ...msg,
+          role: msg.role === "model" ? "assistant" : msg.role,
+        }));
+
+        // Logic: If the first message is AI, prepend the Fake User Message
+        if (
+          formattedMessages.length > 0 &&
+          formattedMessages[0].role !== "user"
+        ) {
+          const repoUrl = `https://github.com/${project.owner}/${project.repoName}`;
+          setMessages([getStartMessage(repoUrl), ...formattedMessages]);
+        } else {
+          setMessages(formattedMessages);
+        }
+      }
+    },
+    [history],
+  );
 
   // 3. ANALYZE REPO
   const analyzeRepo = async (repoUrl: string) => {
     setIsLoading(true);
     const cleanUrl = repoUrl.trim();
-    
-    const userStartMsg: ChatMessage = { role: "user", content: `Analyzing ${cleanUrl}...` };
-    setMessages([userStartMsg]);
+
+    // Optimistic UI
+    const startMsg = getStartMessage(cleanUrl);
+    setMessages([startMsg]);
 
     try {
       const { data: project } = await api.post("/api/repo", { url: cleanUrl });
-      
+
       setCurrentProjectId(project._id);
 
-      // Add new project to the TOP (it is now the latest)
-      setHistory(prev => {
-        const filtered = prev.filter(p => String(p._id) !== String(project._id));
+      setHistory((prev) => {
+        const filtered = prev.filter((p) => p._id !== project._id);
         return [project, ...filtered];
       });
 
-      const backendMessages = (project.chatHistory || []).map((msg: any) => ({
-        role: msg.role === 'model' ? 'assistant' : msg.role,
-        content: msg.content,
-        uiComponent: msg.uiComponent,
-        uiData: msg.uiData
+      const aiSummaryMsg = project.chatHistory.map((msg: any) => ({
+        ...msg,
+        role: msg.role === "model" ? "assistant" : msg.role,
       }));
 
-      setMessages([userStartMsg, ...backendMessages]);
-
+      setMessages([startMsg, ...aiSummaryMsg]);
     } catch (error: any) {
-      console.error("Analysis failed", error);
-      let errorMsg = "Failed to analyze repository";
-      
-      if (error.response?.status === 402) {
-        errorMsg = "Repository too large or GitHub Rate Limit exceeded.";
-      } else if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      }
+      const errorMsg =
+        error.response?.status === 402
+          ? "Repo too large or GitHub API limit reached."
+          : error.response?.data?.message || "Failed to analyze repository";
 
       toast.error(errorMsg);
       setMessages([]);
@@ -117,42 +115,45 @@ export function useRepoChat() {
     if (!userMessage.trim() || !currentProjectId) return;
 
     const newUserMsg: ChatMessage = { role: "user", content: userMessage };
+
+    // Optimistic Update
     setMessages((prev) => [...prev, newUserMsg]);
     setIsLoading(true);
 
     try {
-      const { data } = await api.post(`/api/user/chat?projectId=${currentProjectId}`, { 
-        message: userMessage
-      });
+      const { data } = await api.post(
+        `/api/user/chat?projectId=${currentProjectId}`,
+        {
+          message: userMessage,
+        },
+      );
 
-      const newAiMsg: ChatMessage = { 
-        role: "assistant", 
-        content: data.response 
+      // ⚠️ FIX: Capture UI Component data if backend sends it
+      const newAiMsg: ChatMessage = {
+        role: "assistant",
+        content: data.response,
       };
 
       setMessages((prev) => [...prev, newAiMsg]);
 
-      // Update history and move current chat to TOP
-      setHistory((prev) => {
-        // Find current project
-        const currentProject = prev.find(p => String(p._id) === String(currentProjectId));
-        const others = prev.filter(p => String(p._id) !== String(currentProjectId));
-
-        if (currentProject) {
-          const updatedProject = {
-            ...currentProject,
-            updatedAt: new Date().toISOString(), // Update timestamp
-            chatHistory: [...currentProject.chatHistory, newUserMsg, newAiMsg]
-          };
-          // Return updated project first, then others
-          return [updatedProject, ...others];
-        }
-        return prev;
-      });
-
+      // Update Sidebar History
+      setHistory((prev) =>
+        prev.map((p) => {
+          if (p._id === currentProjectId) {
+            return {
+              ...p,
+              chatHistory: [...p.chatHistory, newUserMsg, newAiMsg],
+            };
+          }
+          return p;
+        }),
+      );
     } catch (error) {
       console.error(error);
       toast.error("Failed to send message");
+
+      // ⚠️ FIX: Remove the optimistic message on failure
+      setMessages((prev) => prev.filter((msg) => msg !== newUserMsg));
     } finally {
       setIsLoading(false);
     }
@@ -161,18 +162,17 @@ export function useRepoChat() {
   const handleNewChat = () => {
     setCurrentProjectId(null);
     setMessages([]);
-    router.replace("/chat"); 
+    router.replace("/chat");
   };
 
-  return { 
-    messages, 
-    isLoading, 
-    isHistoryLoading,
+  return {
+    messages,
+    isLoading,
     history,
     currentProjectId,
-    analyzeRepo, 
-    sendChatMessage, 
+    analyzeRepo,
+    sendChatMessage,
     selectChat,
-    handleNewChat 
+    handleNewChat,
   };
 }

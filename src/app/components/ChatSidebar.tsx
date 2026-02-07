@@ -126,9 +126,9 @@ export function ChatSidebar({
               <div className="opacity-0 group-hover:opacity-100 flex items-center">
                 <div
                   role="button"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    onDeleteChat(chat.id);
+                    await api.delete(`/api/user/chat?projectId=${chat.id}`);
                   }}
                   className="p-1 hover:bg-[#da3633]/20 hover:text-[#f85149] rounded transition-colors"
                 >

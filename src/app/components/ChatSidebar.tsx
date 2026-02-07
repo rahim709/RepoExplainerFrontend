@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 
-// Interface matching the mapped data from page.tsx
 interface SidebarItem {
   id: string;
   title: string;
@@ -18,24 +17,27 @@ interface ChatSidebarProps {
   className?: string;
   history: SidebarItem[];
   activeChatId: string | null;
-  isLoading?: boolean; // NEW: Prop to trigger skeleton state
-  onDeleteChat: (id: string) => void;
+  isLoading?: boolean;
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
+  // removed onDeleteChat prop since we handle it here now
 }
 
 export function ChatSidebar({
   className,
   history,
   activeChatId,
-  isLoading = false, // Default to false
-  onDeleteChat,
+  isLoading = false,
   onNewChat,
   onSelectChat,
 }: ChatSidebarProps) {
   const router = useRouter();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [userData, setUserData] = useState({ name: "User", initials: "U" });
+
+  // 1. Local state to hide deleted items instantly
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,10 +65,10 @@ export function ChatSidebar({
   const handleLogout = async () => {
     try {
       await api.post("/api/user/logout");
-      toast.error("Logged out successfully");
+      toast.success("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1500));
     } catch (error: any) {
-      toast.error("Logged out successfully");
+      toast.success("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       localStorage.clear();
@@ -74,6 +76,36 @@ export function ChatSidebar({
       router.refresh();
     }
   };
+
+  // 2. Self-contained Delete Function
+  const handleDelete = async (projectId: string) => {
+    // Optimistic Update: Hide it immediately
+    setDeletedIds((prev) => [...prev, projectId]);
+
+    try {
+      // API Call
+      await api.delete(`/api/user/chat?projectId=${projectId}`);
+      toast.success("Chat deleted");
+
+      // Refresh the page data in background to keep sync
+      router.refresh();
+
+      // If the deleted chat was active, go to new chat
+      if (activeChatId === projectId) {
+        onNewChat();
+      }
+    } catch (error) {
+      console.error("Delete failed", error);
+      toast.error("Failed to delete chat");
+      // Revert if failed (show it again)
+      setDeletedIds((prev) => prev.filter((id) => id !== projectId));
+    }
+  };
+
+  // Filter out the deleted IDs from the display list
+  const visibleHistory = history.filter(
+    (chat) => !deletedIds.includes(chat.id),
+  );
 
   return (
     <div
@@ -95,20 +127,22 @@ export function ChatSidebar({
         <h4 className="px-3 text-xs font-semibold text-[#8b949e] mb-2 uppercase tracking-wider">
           Recent
         </h4>
-        
-        {/* --- NEW: SKELETON LOADER --- */}
+
         {isLoading ? (
           <div className="space-y-2 mt-2 px-1">
-             {[1, 2, 3].map((i) => (
-                <div key={i} className="h-9 w-full bg-[#161b22] rounded-md animate-pulse border border-[#30363d]/50" />
-             ))}
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-9 w-full bg-[#161b22] rounded-md animate-pulse border border-[#30363d]/50"
+              />
+            ))}
           </div>
-        ) : history.length === 0 ? (
+        ) : visibleHistory.length === 0 ? (
           <p className="px-3 text-xs text-[#8b949e] italic mt-2">
             No recent chats
           </p>
         ) : (
-          history.map((chat) => (
+          visibleHistory.map((chat) => (
             <button
               key={chat.id}
               onClick={() => onSelectChat(chat.id)}
@@ -134,9 +168,10 @@ export function ChatSidebar({
               <div className="opacity-0 group-hover:opacity-100 flex items-center">
                 <div
                   role="button"
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.stopPropagation();
-                    await api.delete(`/api/user/chat?projectId=${chat.id}`);
+                    // 3. Call the local delete function
+                    handleDelete(chat.id);
                   }}
                   className="p-1 hover:bg-[#da3633]/20 hover:text-[#f85149] rounded transition-colors"
                 >
@@ -149,7 +184,7 @@ export function ChatSidebar({
       </div>
 
       <div
-        className="p-3 border-t border-[#30363d] mt-auto relative "
+        className="p-3 border-t border-[#30363d] mt-auto relative"
         ref={profileRef}
       >
         {showProfileMenu && (

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import api from "@/lib/axios"; 
 import { useRouter } from "next/navigation";
+import { Toaster, toast } from "sonner"; 
 
 const loginSchema = z.object({
   identifier: z.string().min(3, "Email is required"),
@@ -26,30 +27,45 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
+    
     try {
-      // The backend sets the 'token' cookie automatically upon success
       await api.post("/api/user/login", {
         email: data.identifier,
         password: data.password,
       });
 
-      // Optional: Save email/name to localStorage ONLY for UI display (Sidebar)
-      // Since the backend login response doesn't return the name, we use the email as fallback
       localStorage.setItem("fullName", data.identifier);
-
-      // Redirect
+      
+      // Success Message
+      toast.success("Login Successfully! Redirecting...");
+      
+      // Delay for 2 seconds to let user read the success message
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
       router.push("/chat");
 
     } catch (error: any) {
-      console.error("Login Error:", error.response?.data?.message || error.message);
-      // Optional: Add toast notification here
-    } finally {
-      setIsLoading(false);
+      console.log("Full Error Object:", error); // Debugging helper
+
+      // --- LOGIC TO EXTRACT BACKEND MESSAGE ---
+      // 1. Check if the server sent a response with data
+      // 2. Access .message because your backend sends json({ message: "..." })
+      const backendErrorMessage = error.response?.data?.message;
+
+      // 3. Fallback to generic error if backend didn't send a message
+      const displayMessage = backendErrorMessage || "Something went wrong. Please try again.";
+      
+      toast.error(displayMessage);
+      
+      setIsLoading(false); // Enable button again so they can retry
     }
   };
 
   return (
-    <div className="w-full max-w-[480px] animate-in fade-in zoom-in duration-500">
+    <div className="w-full max-w-[480px] animate-in fade-in zoom-in duration-500 relative">
+      
+      <Toaster position="top-center" richColors theme="dark" />
+
       <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back</h1>

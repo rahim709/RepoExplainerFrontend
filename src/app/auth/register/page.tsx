@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import api from "@/lib/axios"; 
 import { useRouter } from "next/navigation";
+import { Toaster, toast } from "sonner"; // 1. Import Toaster
 
 const registerSchema = z.object({
   fullName: z.string().min(2, "Full name is too short"),
@@ -27,35 +28,57 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
+
     try {
-      // 1. REGISTER (Backend creates user)
+      // 1. REGISTER CALL
       await api.post("/api/user/register", {
-        userName: data.fullName, // Changed 'fullName' to 'userName' to match your backend model
+        userName: data.fullName, // Logic: maps fullName to userName expected by backend
         email: data.email,
         password: data.password,
       });
 
-      // 2. AUTO-LOGIN (Backend sets the cookie)
+      // 2. AUTO-LOGIN CALL
       await api.post("/api/user/login", {
         email: data.email,
         password: data.password,
       });
 
-      // 3. Save Name for UI only
+      // 3. Save Name for UI
       localStorage.setItem("fullName", data.fullName);
 
-      // 4. Redirect
+      // 4. Success Toast
+      toast.success("Account created successfully! Redirecting...");
+
+      // 5. UX Delay (2 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // 6. Redirect
       router.push("/chat");
 
     } catch (error: any) {
-      console.error("Registration Error:", error.response?.data?.message || error.message);
-    } finally {
-      setIsLoading(false);
+      console.error("Full Registration Error:", error);
+
+      // --- LOGIC TO HANDLE BACKEND RESPONSE ---
+      // Your backend returns: res.status(X).json({ message: '...' })
+      // So we look for error.response.data.message
+      
+      const backendMessage = error.response?.data?.message;
+      
+      // Fallback text if the server crashes completely without JSON
+      const displayMessage = backendMessage || "Registration failed. Please try again.";
+
+      toast.error(displayMessage);
+      
+      setIsLoading(false); // Re-enable button
     }
   };
 
   return (
-    <div className="w-full max-w-[480px] animate-in slide-in-from-bottom-8 fade-in duration-700">
+    <div className="w-full max-w-[480px] animate-in slide-in-from-bottom-8 fade-in duration-700 relative">
+      
+      {/* --- CRITICAL: Add Toaster for Pop-ups --- */}
+      <Toaster position="top-center" richColors theme="dark" />
+
       <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         <div className="text-center mb-10 space-y-2">
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Join the community</h1>

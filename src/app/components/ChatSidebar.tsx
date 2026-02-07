@@ -5,15 +5,22 @@ import { Plus, MessageSquare, Trash2, LogOut, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios"; 
-import { ChatSession } from "@/hooks/useRepoChat"; 
+import { toast } from "sonner"; 
+
+// Interface matching the mapped data from page.tsx
+interface SidebarItem {
+  id: string; 
+  title: string;
+  date: string;
+}
 
 interface ChatSidebarProps {
   className?: string;
-  history: ChatSession[];
-  activeChatId: number | null; 
-  onDeleteChat: (id: number) => void;
+  history: SidebarItem[];
+  activeChatId: string | null; 
+  onDeleteChat: (id: string) => void;
   onNewChat: () => void;
-  onSelectChat: (id: number) => void; 
+  onSelectChat: (id: string) => void; 
 }
 
 export function ChatSidebar({ 
@@ -46,22 +53,15 @@ export function ChatSidebar({
 
   const handleLogout = async () => {
     try {
-      // 1. Call Backend to Clear Cookie
-      // If authMiddleware is on, this requires a valid cookie!
       await api.post("/api/user/logout");
+      toast.success("Logged out successfully");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        // This is NORMAL if the token expired or cookie was blocked.
-        // We just ignore it because we are logging out anyway.
-        console.log("Session already expired on server.");
-      } else {
-        console.error("Logout request failed", error);
-      }
+      // Force logout even if API fails
+      toast.success("Logged out successfully");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
-      // 2. Always Clear UI data
       localStorage.clear();
-
-      // 3. Redirect to Landing Page
       router.replace("/");
       router.refresh();
     }
@@ -78,25 +78,25 @@ export function ChatSidebar({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4 scrollbar-thin scrollbar-thumb-[#30363d] scrollbar-track-transparent">
-        <div className="space-y-1">
+      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin scrollbar-thumb-[#30363d] scrollbar-track-transparent">
           <h4 className="px-3 text-xs font-semibold text-[#8b949e] mb-2 uppercase tracking-wider">Recent</h4>
           {history.length === 0 ? (
             <p className="px-3 text-xs text-[#8b949e] italic mt-2">No recent chats</p>
           ) : (
+            // Ensure strict unique keys here
             history.map((chat) => (
               <button
                 key={chat.id}
                 onClick={() => onSelectChat(chat.id)} 
                 className={cn(
                   "group flex items-center justify-between w-full px-3 py-2 text-sm rounded-md transition-colors text-left",
-                  activeChatId === chat.id 
+                  String(activeChatId) === String(chat.id)
                     ? "bg-[#161b22] text-white font-medium border-l-2 border-[#238636]" 
                     : "text-[#c9d1d9] hover:bg-[#161b22] hover:text-white"
                 )}
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <MessageSquare size={14} className={cn("shrink-0", activeChatId === chat.id ? "text-white" : "text-[#8b949e]")} />
+                  <MessageSquare size={14} className={cn("shrink-0", String(activeChatId) === String(chat.id) ? "text-white" : "text-[#8b949e]")} />
                   <span className="truncate">{chat.title}</span>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 flex items-center">
@@ -107,7 +107,6 @@ export function ChatSidebar({
               </button>
             ))
           )}
-        </div>
       </div>
 
        <div className="p-3 border-t border-[#30363d] mt-auto relative" ref={profileRef}>

@@ -78,7 +78,7 @@ function ChatContent() {
       </div>
     );
   }
-
+  // Hello
   if (!isAuthenticated) return null;
 
   return (

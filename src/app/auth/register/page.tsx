@@ -50,7 +50,7 @@ export default function RegisterPage() {
       toast.success("Account created! Redirecting...");
 
       // 5. UX Delay (2 seconds)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // 6. Redirect
       router.push("/chat");

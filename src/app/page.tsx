@@ -137,10 +137,10 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-xs sm:text-sm text-gray-500">
               <span className="hidden sm:inline">Try popular repos:</span>
               <button
-                onClick={() => setRepoUrl("https://github.com/facebook/react")}
+                onClick={() => setRepoUrl("https://github.com/rahim709/RepoExplainerFrontend")}
                 className="cursor-pointer px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] hover:border-blue-500/50 hover:text-blue-300 hover:bg-blue-500/10 transition-all"
               >
-                ⚛️ facebook/react
+                ⚛️ Abdur/RepoExplainer
               </button>
               <button
                 onClick={() =>

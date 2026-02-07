@@ -158,10 +158,10 @@ export const MessageThreadFull = React.forwardRef<
               Try popular repos:
             </span>
             <button
-              onClick={() => onChatStart("https://github.com/facebook/react")}
+              onClick={() => onChatStart("https://github.com/rahim709/RepoExplainerFrontend")}
               className="cursor-pointer px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
             >
-              facebook/react
+              Abdur/RepoExplainer
             </button>
             <button
               onClick={() =>

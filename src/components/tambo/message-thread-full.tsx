@@ -159,7 +159,7 @@ export const MessageThreadFull = React.forwardRef<
             </span>
             <button
               onClick={() => onChatStart("https://github.com/facebook/react")}
-              className="px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
+              className="cursor-pointer px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
             >
               facebook/react
             </button>
@@ -169,7 +169,7 @@ export const MessageThreadFull = React.forwardRef<
                   "https://github.com/ArpitKrSingh7/HumanActivityRecognition",
                 )
               }
-              className="px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
+              className="cursor-pointer px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
             >
               Arpit/HumanActivityRecognition
             </button>

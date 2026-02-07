@@ -37,7 +37,7 @@ export default function LoginPage() {
       localStorage.setItem("fullName", data.identifier);
       
       // Success Message
-      toast.success("Login Successfully! Redirecting...");
+      toast.success("Welcome back!");
       
       // Delay for 2 seconds to let user read the success message
       await new Promise((resolve) => setTimeout(resolve, 2000));

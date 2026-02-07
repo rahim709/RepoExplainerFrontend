@@ -31,6 +31,7 @@ function ChatContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // 1. Check Auth
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -45,6 +46,7 @@ function ChatContent() {
     checkAuth();
   }, [router]);
 
+  // 2. Handle Auto-Analysis (Pending URL or Query Param)
   useEffect(() => {
     if (isAuthenticated && !currentProjectId && !isLoading) {
       const pendingUrl = localStorage.getItem("pendingRepoUrl");
@@ -60,6 +62,7 @@ function ChatContent() {
     }
   }, [isAuthenticated, currentProjectId, isLoading, searchParams, analyzeRepo]);
 
+  // Mobile Handlers
   const handleMobileSelectChat = (id: string) => {
     selectChat(id);
     setIsMobileSidebarOpen(false);

@@ -40,7 +40,7 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       
       // Delay for 2 seconds to let user read the success message
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       
       router.push("/chat");
 

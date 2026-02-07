@@ -20,7 +20,6 @@ interface ChatSidebarProps {
   isLoading?: boolean;
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
-  // removed onDeleteChat prop since we handle it here now
 }
 
 export function ChatSidebar({
@@ -65,10 +64,12 @@ export function ChatSidebar({
   const handleLogout = async () => {
     try {
       await api.post("/api/user/logout");
-      toast.success("Logged out successfully");
+      // Changed to .error for RED toast color
+      toast.error("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1500));
     } catch (error: any) {
-      toast.success("Logged out successfully");
+      // Changed to .error for RED toast color
+      toast.error("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       localStorage.clear();
@@ -83,26 +84,22 @@ export function ChatSidebar({
     setDeletedIds((prev) => [...prev, projectId]);
 
     try {
-      // API Call
       await api.delete(`/api/user/chat?projectId=${projectId}`);
       toast.success("Chat deleted");
 
-      // Refresh the page data in background to keep sync
       router.refresh();
 
-      // If the deleted chat was active, go to new chat
       if (activeChatId === projectId) {
         onNewChat();
       }
     } catch (error) {
       console.error("Delete failed", error);
       toast.error("Failed to delete chat");
-      // Revert if failed (show it again)
+      // Revert if failed
       setDeletedIds((prev) => prev.filter((id) => id !== projectId));
     }
   };
 
-  // Filter out the deleted IDs from the display list
   const visibleHistory = history.filter(
     (chat) => !deletedIds.includes(chat.id),
   );
@@ -170,7 +167,6 @@ export function ChatSidebar({
                   role="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // 3. Call the local delete function
                     handleDelete(chat.id);
                   }}
                   className="p-1 hover:bg-[#da3633]/20 hover:text-[#f85149] rounded transition-colors"

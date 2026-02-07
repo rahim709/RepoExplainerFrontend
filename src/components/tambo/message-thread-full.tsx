@@ -164,10 +164,14 @@ export const MessageThreadFull = React.forwardRef<
               facebook/react
             </button>
             <button
-              onClick={() => onChatStart("https://github.com/vercel/next.js")}
+              onClick={() =>
+                onChatStart(
+                  "https://github.com/ArpitKrSingh7/HumanActivityRecognition",
+                )
+              }
               className="px-3 py-1 rounded-full border border-[#30363d] hover:border-blue-500/50 hover:text-blue-400 hover:bg-[#1f6feb]/10 transition-colors"
             >
-              vercel/next.js
+              Arpit/HumanActivityRecognition
             </button>
           </div>
         </div>

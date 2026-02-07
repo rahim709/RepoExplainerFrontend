@@ -98,7 +98,7 @@ function ChatContent() {
 
       <div
         className={cn(
-          "fixed top-0 left-0 h-full w-[280px] bg-[#010409] z-50 transform transition-transform duration-300 ease-in-out md:hidden border-r border-[#30363d] flex flex-col",
+          "fixed top-0 left-0 h-full w-[280px] bg-[#010409] z-51 transform transition-transform duration-300 ease-in-out md:hidden border-r border-[#30363d] flex flex-col",
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

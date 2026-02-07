@@ -1,131 +1,77 @@
-# Tambo Template
+# Repo Explainer Frontend
 
-This is a starter NextJS app with Tambo hooked up to get your AI app development started quickly.
+[Live Deployment](https://repoexplainer-app.vercel.app/)
 
-## Get Started
+Repo Explainer is an AI-powered application that helps users understand GitHub repositories through an interactive chat interface. This project serves as the frontend client, built with Next.js and heavily leveraging the **Tambo AI SDK** for its conversational capabilities.
 
-1. Run `npm create-tambo@latest my-tambo-app` for a new project
+## 🚀 Tambo AI Integration
 
-2. `npm install`
+This project demonstrates a robust integration of the **Tambo UI SDK** (`@tambo-ai/react` and `@tambo-ai/typescript-sdk`), showcasing how to build rich, generative UI experiences.
 
-3. `npx tambo init`
+### Key Features & Implementation
 
-- or rename `example.env.local` to `.env.local` and add your tambo API key you can get for free [here](https://tambo.co/dashboard).
+1.  **Centralized Configuration (`src/lib/tambo.ts`)**
+    The core of the integration lies in `src/lib/tambo.ts`. This file acts as the registry for:
+    - **AI Tools:** Functions that the AI can execute to fetch real-time data (e.g., `countryPopulation` tool).
+    - **Generative Components:** UI components that the AI can choose to render within the chat stream based on context.
 
-4. Run `npm run dev` and go to `localhost:3000` to use the app!
+2.  **Custom AI Components**
+    We have extended the default chat experience by registering custom components in `src/components/tambo/`:
+    - **`Graph`**: For visualizing data trends dynamically.
+    - **`DataCard`**: For displaying structured statistical information.
 
-## Customizing
+    When the AI detects a need to show a graph or a data card, it doesn't just output text; it renders these interactive React components directly in the chat stream.
 
-### Change what components tambo can control
+3.  **Message Threading**
+    The application utilizes `MessageThreadFull` (located in `src/components/tambo/message-thread-full.tsx`) to handle complex message history, loading states, and generative content streaming seamlessly.
 
-You can see how components are registered with tambo in `src/lib/tambo.ts`:
+### Directory Structure for AI
 
-```tsx
-export const components: TamboComponent[] = [
-  {
-    name: "Graph",
-    description:
-      "A component that renders various types of charts (bar, line, pie) using Recharts. Supports customizable data visualization with labels, datasets, and styling options.",
-    component: Graph,
-    propsSchema: graphSchema,
-  },
-  // Add more components here
-];
-```
+The `src/components/tambo/` directory is structured to house all AI-related UI elements, making the project scalable and easy to maintain:
 
-You can install the graph component into any project with:
+- `mcp-*.tsx`: Components for Model Context Protocol interactions.
+- `message-*.tsx`: Components handling message rendering and input.
+- `elicitation-ui.tsx`: Specialized UI for gathering user intent.
 
-```bash
-npx tambo add graph
-```
+## 🛠 Tech Stack
 
-The example Graph component demonstrates several key features:
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **AI SDK:** [Tambo AI](https://tambo.co/)
+- **Icons:** Lucide React
+- **State/Data:** Axios, SWR/React Query patterns (custom hooks)
 
-- Different prop types (strings, arrays, enums, nested objects)
-- Multiple chart types (bar, line, pie)
-- Customizable styling (variants, sizes)
-- Optional configurations (title, legend, colors)
-- Data visualization capabilities
+## 🏁 Getting Started
 
-Update the `components` array with any component(s) you want tambo to be able to use in a response!
+1.  **Clone the repository**
 
-You can find more information about the options [here](https://docs.tambo.co/concepts/generative-interfaces/generative-components)
+2.  **Install dependencies**
 
-### Add tools for tambo to use
+    ```bash
+    npm install
+    ```
 
-Tools are defined with `inputSchema` and `outputSchema`:
+3.  **Environment Setup**
+    Copy the example environment file:
 
-```tsx
-export const tools: TamboTool[] = [
-  {
-    name: "globalPopulation",
-    description:
-      "A tool to get global population trends with optional year range filtering",
-    tool: getGlobalPopulationTrend,
-    inputSchema: z.object({
-      startYear: z.number().optional(),
-      endYear: z.number().optional(),
-    }),
-    outputSchema: z.array(
-      z.object({
-        year: z.number(),
-        population: z.number(),
-        growthRate: z.number(),
-      }),
-    ),
-  },
-];
-```
+    ```bash
+    cp example.env.local .env.local
+    ```
 
-Find more information about tools [here.](https://docs.tambo.co/concepts/tools)
+    Add your Tambo API Key to `.env.local`:
 
-### The Magic of Tambo Requires the TamboProvider
+    ```env
+    NEXT_PUBLIC_TAMBO_API_KEY=your_key_here
+    ```
 
-Make sure in the TamboProvider wrapped around your app:
+4.  **Run the development server**
 
-```tsx
-...
-<TamboProvider
-  apiKey={process.env.NEXT_PUBLIC_TAMBO_API_KEY!}
-  components={components} // Array of components to control
-  tools={tools} // Array of tools it can use
->
-  {children}
-</TamboProvider>
-```
+    ```bash
+    npm run dev
+    ```
 
-In this example we do this in the `Layout.tsx` file, but you can do it anywhere in your app that is a client component.
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Voice input
+## 🤝 Contributing
 
-The template includes a `DictationButton` component using the `useTamboVoice` hook for speech-to-text input.
-
-### MCP (Model Context Protocol)
-
-The template includes MCP support for connecting to external tools and resources. You can use the MCP hooks from `@tambo-ai/react/mcp`:
-
-- `useTamboMcpPromptList` - List available prompts from MCP servers
-- `useTamboMcpPrompt` - Get a specific prompt
-- `useTamboMcpResourceList` - List available resources
-
-See `src/components/tambo/mcp-components.tsx` for example usage.
-
-### Change where component responses are shown
-
-The components used by tambo are shown alongside the message response from tambo within the chat thread, but you can have the result components show wherever you like by accessing the latest thread message's `renderedComponent` field:
-
-```tsx
-const { thread } = useTambo();
-const latestComponent =
-  thread?.messages[thread.messages.length - 1]?.renderedComponent;
-
-return (
-  <div>
-    {latestComponent && (
-      <div className="my-custom-wrapper">{latestComponent}</div>
-    )}
-  </div>
-);
-```
-
-For more detailed documentation, visit [Tambo's official docs](https://docs.tambo.co).
+This project is part of the Tambo AI ecosystem. Contributions to improve the component library or tool definitions are welcome.

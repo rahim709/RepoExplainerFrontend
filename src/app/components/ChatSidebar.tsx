@@ -18,6 +18,7 @@ interface ChatSidebarProps {
   className?: string;
   history: SidebarItem[];
   activeChatId: string | null;
+  isLoading?: boolean; // NEW: Prop to trigger skeleton state
   onDeleteChat: (id: string) => void;
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
@@ -27,6 +28,7 @@ export function ChatSidebar({
   className,
   history,
   activeChatId,
+  isLoading = false, // Default to false
   onDeleteChat,
   onNewChat,
   onSelectChat,
@@ -61,11 +63,10 @@ export function ChatSidebar({
   const handleLogout = async () => {
     try {
       await api.post("/api/user/logout");
-      toast.success("Logged out successfully");
+      toast.error("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1500));
     } catch (error: any) {
-      // Force logout even if API fails
-      toast.success("Logged out successfully");
+      toast.error("Logged out successfully");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       localStorage.clear();
@@ -94,12 +95,19 @@ export function ChatSidebar({
         <h4 className="px-3 text-xs font-semibold text-[#8b949e] mb-2 uppercase tracking-wider">
           Recent
         </h4>
-        {history.length === 0 ? (
+        
+        {/* --- NEW: SKELETON LOADER --- */}
+        {isLoading ? (
+          <div className="space-y-2 mt-2 px-1">
+             {[1, 2, 3].map((i) => (
+                <div key={i} className="h-9 w-full bg-[#161b22] rounded-md animate-pulse border border-[#30363d]/50" />
+             ))}
+          </div>
+        ) : history.length === 0 ? (
           <p className="px-3 text-xs text-[#8b949e] italic mt-2">
             No recent chats
           </p>
         ) : (
-          // Ensure strict unique keys here
           history.map((chat) => (
             <button
               key={chat.id}

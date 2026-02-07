@@ -79,8 +79,9 @@ export default function Home() {
             <span className="tracking-wide">AI-POWERED CODE ANALYSIS</span>
           </div>
 
-          {/* Main Title */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+          {/* Main Title - UPDATED ANIMATION */}
+          {/* Added 'zoom-in-50' for dramatic "inside" effect and 'duration-1000' for smoothness */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] animate-in fade-in zoom-in-50 slide-in-from-bottom-8 duration-1000 ease-out fill-mode-backwards">
             Chat with your <br className="hidden md:block" />
             <span className="bg-gradient-to-r from-blue-300 via-indigo-300 to-purple-300 bg-clip-text text-transparent drop-shadow-sm">
               Codebase Instantly.
@@ -88,14 +89,14 @@ export default function Home() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 px-4">
+          <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200 px-4 fill-mode-backwards">
             Stop grepping through thousands of files. Paste a GitHub link and
             get an <span className="text-white font-medium">AI Architect</span>{" "}
             that maps your entire project context in seconds.
           </p>
 
           {/* INPUT FORM */}
-          <div className="w-full max-w-xl mx-auto mt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-2">
+          <div className="w-full max-w-xl mx-auto mt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-2 fill-mode-backwards">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
 
@@ -121,7 +122,7 @@ export default function Home() {
                         h-12 sm:h-auto px-6 rounded-xl font-bold text-sm sm:text-base whitespace-nowrap flex items-center justify-center gap-2 transition-all duration-300 shadow-lg
                         ${
                           repoUrl.trim()
-                            ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20 hover:shadow-blue-500/40 translate-y-0"
+                            ? "bg-blue-600 hover:bg-blue-500 cursor-pointer text-white shadow-blue-500/20 hover:shadow-blue-500/40 translate-y-0"
                             : "bg-[#21262d] text-gray-500 cursor-not-allowed"
                         }
                       `}
@@ -137,7 +138,7 @@ export default function Home() {
               <span className="hidden sm:inline">Try popular repos:</span>
               <button
                 onClick={() => setRepoUrl("https://github.com/facebook/react")}
-                className="px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] hover:border-blue-500/50 hover:text-blue-300 hover:bg-blue-500/10 transition-all"
+                className="cursor-pointer px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] hover:border-blue-500/50 hover:text-blue-300 hover:bg-blue-500/10 transition-all"
               >
                 ⚛️ facebook/react
               </button>
@@ -147,7 +148,7 @@ export default function Home() {
                     "https://github.com/ArpitKrSingh7/HumanActivityRecognition",
                   )
                 }
-                className="px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] hover:border-white/50 hover:text-white hover:bg-white/5 transition-all"
+                className="cursor-pointer px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] hover:border-white/50 hover:text-white hover:bg-white/5 transition-all"
               >
                 ▲ Arpit/HumanActivityRecognition
               </button>
@@ -253,7 +254,7 @@ export default function Home() {
           <div className="flex justify-center pt-4">
             <button
               onClick={() => router.push("/auth/register")}
-              className="group relative px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)] active:scale-95"
+              className="cursor-pointer group relative px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)] active:scale-95"
             >
               <span className="relative z-10 flex items-center gap-2">
                 Get Started Free{" "}

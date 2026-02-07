@@ -47,7 +47,7 @@ export default function RegisterPage() {
       localStorage.setItem("fullName", data.fullName);
 
       // 4. Success Toast
-      toast.success("Account created successfully! Redirecting...");
+      toast.success("Account created! Redirecting...");
 
       // 5. UX Delay (2 seconds)
       await new Promise((resolve) => setTimeout(resolve, 2000));

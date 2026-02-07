@@ -1,4 +1,5 @@
 "use client";
+
 import { MessageThreadFull } from "@/components/tambo/message-thread-full";
 import { ChatSidebar } from "@/app/components/ChatSidebar";
 import { useState, useEffect, Suspense } from "react";
@@ -11,14 +12,13 @@ import { cn } from "@/lib/utils";
 
 function ChatContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // Mobile Sidebar State
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const {
     messages,
     isLoading,
-    isHistoryLoading, // NEW: Get history loading state
     history,
     currentProjectId,
     analyzeRepo,
@@ -80,6 +80,7 @@ function ChatContent() {
       </div>
     );
   }
+
   if (!isAuthenticated) return null;
 
   return (
@@ -87,6 +88,7 @@ function ChatContent() {
       <Toaster position="top-center" richColors theme="dark" />
 
       {/* --- MOBILE SIDEBAR OVERLAY --- */}
+      {/* 1. Backdrop */}
       <div
         className={cn(
           "fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 md:hidden",
@@ -97,12 +99,14 @@ function ChatContent() {
         onClick={() => setIsMobileSidebarOpen(false)}
       />
 
+      {/* 2. Slide-out Drawer */}
       <div
         className={cn(
           "fixed top-0 left-0 h-full w-[280px] bg-[#010409] z-50 transform transition-transform duration-300 ease-in-out md:hidden border-r border-[#30363d] flex flex-col",
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
+        {/* Close Button inside Drawer */}
         <div className="absolute top-3 right-3 z-50">
           <button
             onClick={() => setIsMobileSidebarOpen(false)}
@@ -112,8 +116,9 @@ function ChatContent() {
           </button>
         </div>
 
+        {/* Render Sidebar inside Drawer */}
         <ChatSidebar
-          className="w-full h-full pt-12"
+          className="w-full h-full pt-12" // Padding for close button
           history={history.map((h) => ({
             id: h._id as any,
             title: `${h.owner}/${h.repoName}`,
@@ -123,7 +128,7 @@ function ChatContent() {
             messages: [],
           }))}
           activeChatId={currentProjectId as any}
-          isLoading={isHistoryLoading} // PASS LOADING STATE
+          //onDeleteChat={() => {}}
           onNewChat={handleMobileNewChat}
           onSelectChat={(id) => handleMobileSelectChat(id.toString())}
         />
@@ -131,7 +136,7 @@ function ChatContent() {
 
       {/* --- DESKTOP SIDEBAR --- */}
       <div
-        className={`${isSidebarOpen ? "w-[260px]" : "w-0 -translate-x-full opacity-0"} transition-all duration-300 ease-in-out border-r border-[#30363d] flex-shrink hidden md:block relative`}
+        className={`${isSidebarOpen ? "w-[260px]" : "w-0 -translate-x-full opacity-0"} transition-all duration-300 ease-in-out border-r border-[#30363d] flex-shrink-0 hidden md:block relative`}
       >
         <ChatSidebar
           className="w-[260px]"
@@ -144,7 +149,7 @@ function ChatContent() {
             messages: [],
           }))}
           activeChatId={currentProjectId as any}
-          isLoading={isHistoryLoading} // PASS LOADING STATE
+          //onDeleteChat={() => {}}
           onNewChat={handleNewChat}
           onSelectChat={(id) => selectChat(id.toString())}
         />
@@ -152,6 +157,7 @@ function ChatContent() {
 
       {/* --- MAIN CHAT AREA --- */}
       <div className="flex-1 flex flex-col min-w-0 relative h-full bg-[#0d1117]">
+        {/* Mobile Menu Trigger */}
         <div className="absolute top-4 left-4 z-20 md:hidden">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
@@ -161,6 +167,7 @@ function ChatContent() {
           </button>
         </div>
 
+        {/* Desktop Collapse Trigger */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="hidden md:flex absolute top-4 left-4 z-20 p-2 text-[#8b949e] hover:text-white bg-transparent hover:bg-[#1f242c] rounded-md transition-all"

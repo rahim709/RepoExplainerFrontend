@@ -1,5 +1,4 @@
 "use client";
-
 import { MessageThreadFull } from "@/components/tambo/message-thread-full";
 import { ChatSidebar } from "@/app/components/ChatSidebar";
 import { useState, useEffect, Suspense } from "react";
@@ -78,7 +77,6 @@ function ChatContent() {
       </div>
     );
   }
-  // Hello
   if (!isAuthenticated) return null;
 
   return (
@@ -98,7 +96,7 @@ function ChatContent() {
 
       <div
         className={cn(
-          "fixed top-0 left-0 h-full w-[280px] bg-[#010409] z-51 transform transition-transform duration-300 ease-in-out md:hidden border-r border-[#30363d] flex flex-col",
+          "fixed top-0 left-0 h-full w-[280px] bg-[#010409] z-50 transform transition-transform duration-300 ease-in-out md:hidden border-r border-[#30363d] flex flex-col",
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -130,7 +128,7 @@ function ChatContent() {
 
       {/* --- DESKTOP SIDEBAR --- */}
       <div
-        className={`${isSidebarOpen ? "w-[260px]" : "w-0 -translate-x-full opacity-0"} transition-all duration-300 ease-in-out border-r border-[#30363d] flex-shrink-0 hidden md:block relative`}
+        className={`${isSidebarOpen ? "w-[260px]" : "w-0 -translate-x-full opacity-0"} transition-all duration-300 ease-in-out border-r border-[#30363d] flex-shrink hidden md:block relative`}
       >
         <ChatSidebar
           className="w-[260px]"
